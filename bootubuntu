@@ -1,0 +1,48 @@
+export uloc='/sdcard/ubuntu'
+
+mount -o remount,rw -t yaffs2 /dev/block/mtdblock3 /system
+if [ ! -d $uloc ]
+	then
+		echo "$uloc not found, exiting."
+		exit
+fi
+
+echo "Setting Variables"
+export bin=/system/bin
+export mnt=/data/local/ubuntu/
+export PATH=$bin:/usr/bin:/usr/sbin:/bin:$PATH
+export TERM=linux
+export HOME=/root
+export lovar=`losetup -f`
+echo `losetup -f` > /data/local/lovar
+
+if [ ! -d /data/local/ubuntu ]
+	then
+		mkdir /data/local/ubuntu
+fi
+
+echo "Setting up loop device (@$lovar)"
+mknod $lovar b 7 99
+losetup $lovar $uloc/ubuntu.img
+
+echo "Mounting and setting up VNC"
+mount -t ext2 $lovar /data/local/ubuntu
+mount -t devpts devpts /data/local/ubuntu/dev/pts
+mount -t proc proc /data/local/ubuntu/proc
+mount -t sysfs sysfs /data/local/ubuntu/sys
+cd /data/local/ubuntu/
+rm -r tmp
+mkdir tmp
+
+echo "Setting up the network"
+sysctl -w net.ipv4.ip_forward=1
+echo "nameserver 208.67.222.222" > /data/local/ubuntu/etc/resolv.conf
+echo "nameserver 208.67.220.220" >> /data/local/ubuntu/etc/resolv.conf
+echo "127.0.0.1 localhost" > /data/local/ubuntu/etc/hosts
+echo "Ubuntu boot complete!"
+echo "Type "gui" in the terminal to start the VNC server."
+echo "Shut down Ubuntu with "exitu""
+echo "Kill the VNC server with "killvnc" when shutting down Ubuntu"
+echo "or you won't be able to umount later."
+
+chroot /data/local/ubuntu /bin/bash

@@ -1,0 +1,17 @@
+export uloc='/sdcard/ubuntu'
+
+if [ ! -d $uloc ]
+	then
+		echo "$uloc doesn't exist: won't do anything."
+		exit
+fi
+
+echo "Umounting"
+umount -lfr /data/local/ubuntu/dev/pts
+umount -lfr /data/local/ubuntu/proc 
+umount -lfr /data/local/ubuntu/sys 
+umount -lfr /data/local/ubuntu
+export lovar=`cat /data/local/lovar`
+rm $lovar
+losetup -d $lovar
+rm $lovar 
